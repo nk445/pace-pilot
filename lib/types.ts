@@ -8,6 +8,11 @@ type UserInput = {
   sessions: number;
 };
 
+type ResolvedUserInput = UserInput & {
+  baseMileage: number;
+  targetMileage: number;
+};
+
 type Run = {
     runId: string;
     distance: number;

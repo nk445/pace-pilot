@@ -11,7 +11,7 @@ function generateSchedule(input: UserInput): Schedule {
     // TODO: Construct final schedule
 }
 
-function resolveInputDefaults(input: UserInput): UserInput {
+function resolveInputDefaults(input: UserInput): ResolvedUserInput {
     let base = input.baseMileage;
     let target = input.targetMileage;
     // check if user input base mileage, default to 5
@@ -31,9 +31,7 @@ function resolveInputDefaults(input: UserInput): UserInput {
         target = base + (5 * numofIncreases);
     }
 
-    // TODO: WRITE LOGIC FOR VALIDATING RACE TIME INPUTS
-
-    const resolvedInput: UserInput = {
+    const resolvedInput: ResolvedUserInput = {
         baseMileage: base,
         targetMileage: target,
         weeks: input.weeks,

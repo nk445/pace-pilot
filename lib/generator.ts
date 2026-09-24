@@ -1,10 +1,16 @@
+import { createCookiesWithMutableAccessCheck } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+import { resolve } from "path";
+
 // Accepts UserInputs and returns Schedule
 function generateSchedule(input: UserInput): Schedule {
     // validate user base and target mileage inputs
     const resolvedInput = resolveInputDefaults(input);
     
     // TODO: calculate progression of mileage across weeks
-
+    const weeklyMileage = calculateWeeklyMileage(resolvedInput.baseMileage,
+        resolvedInput.targetMileage,
+        resolvedInput.weeks,
+        resolvedInput.sessions);
 
     // TODO: Distribute the weekly miles into days
 
@@ -25,10 +31,11 @@ function resolveInputDefaults(input: UserInput): ResolvedUserInput {
         // number of weeks dedicated to base build
         const baseBuildWeeks = (Math.min(input.weeks, 10));
 
-        //increase mileage every 3 weeks
-        const numofIncreases = Math.ceil( baseBuildWeeks / 3);
+        // increase mileage every 4th week
+        const numofIncreases = Math.floor( baseBuildWeeks / 4);
 
-        target = base + (5 * numofIncreases);
+        // increase mileage by # sessions per week
+        target = base + (input.sessions * numofIncreases);
     }
 
     const resolvedInput: ResolvedUserInput = {
@@ -42,4 +49,25 @@ function resolveInputDefaults(input: UserInput): ResolvedUserInput {
     };
 
     return resolvedInput;
+}
+
+function calculateWeeklyMileage(base: number,
+    target: number,
+    numOfWeeks: number,
+    weeklySessions: number): number[]
+{
+    const weeklyMileage: number[] = new Array(numOfWeeks).fill(0);
+    
+    // create weeks with mileage applied
+    for (let i = 0; i < numOfWeeks; ++i) {
+        // mileage increase every 4th week until target mileage
+        const mileageIncreases = Math.floor(i / 4);
+
+        // increase by # weekly sessions
+        const currMileage = Math.min(base +
+            (weeklySessions * mileageIncreases),target);
+        weeklyMileage[i] = currMileage;
+    }
+
+    return weeklyMileage;
 }

@@ -7,7 +7,7 @@ function generateSchedule(input: UserInput): Schedule {
     const resolvedInput = resolveInputDefaults(input);
     
     // TODO: calculate progression of mileage across weeks
-    const weeklyMileage = calculateWeeklyMileage(resolvedInput.baseMileage,
+    const perWeekMileage = calculateWeeklyMileage(resolvedInput.baseMileage,
         resolvedInput.targetMileage,
         resolvedInput.weeks,
         resolvedInput.sessions);
@@ -70,4 +70,31 @@ function calculateWeeklyMileage(base: number,
     }
 
     return weeklyMileage;
+}
+
+function distributeDailyRuns (mileage: number, sessions: number): number[] {
+    // create array of mileage per day
+    const dailyMileage: number[] = new Array(sessions).fill(0);
+
+    // Run distances are weighted: long (2.25), quality (1.75), easy (1)
+    let totalWeight = (sessions === 1) ? 2.25 : (sessions + 2);
+    let remaining = mileage;
+    
+    for (let i = 0; i < sessions; ++i) {
+        if (i === 0) {
+            dailyMileage[i] = Math.floor((2.25 / totalWeight) * mileage);
+        }
+        else if (i === 1) {
+            dailyMileage[i] = Math.round((1.75 / totalWeight) * mileage);
+        }
+        else if (i === sessions - 1) {
+            dailyMileage[i] = remaining;
+        }
+        else {
+            dailyMileage[i] = Math.round((1 / totalWeight) * mileage);
+        }
+        remaining -= dailyMileage[i];
+    }
+
+    return dailyMileage;
 }

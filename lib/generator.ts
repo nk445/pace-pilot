@@ -1,6 +1,28 @@
 import { createCookiesWithMutableAccessCheck } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { resolve } from "path";
 
+// map number of sessions to a default distribution
+// first 3 days are quality sessions
+const SESSIONS_TO_DAYS: Record<number, number[]> = {
+    1: [0],
+    2: [1, 5],
+    3: [1, 5, 3],
+    4: [0, 4, 2, 5],
+    5: [0, 3, 5, 4, 1],
+    6: [0, 2, 5, 4, 1, 6],
+    7: [0, 2, 5, 3, 1, 4, 6]
+}
+
+const DAYS_OF_WEEK = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+]
+
 // Accepts UserInputs and returns Schedule
 function generateSchedule(input: UserInput): Schedule {
     // validate user base and target mileage inputs
@@ -13,6 +35,7 @@ function generateSchedule(input: UserInput): Schedule {
         resolvedInput.sessions);
 
     // TODO: Distribute the weekly miles into days
+    
 
     // TODO: Construct final schedule
 }
@@ -72,9 +95,21 @@ function calculateWeeklyMileage(base: number,
     return weeklyMileage;
 }
 
-function distributeDailyRuns (mileage: number, sessions: number): number[] {
+function distributeDailyRuns (mileage: number, sessions: number) {
+    const perSessionMileage = calculateMileagePerSession(mileage, sessions);
+    const daysActive = SESSIONS_TO_DAYS[sessions];
+    const dailyMileage = [0, 0, 0, 0, 0, 0, 0];
+
+    daysActive.forEach((dayIndex, i) => {
+        dailyMileage[dayIndex] = perSessionMileage[i];
+    });
+
+    return dailyMileage;
+}
+
+function calculateMileagePerSession (mileage: number, sessions: number): number[] {
     // create array of mileage per day
-    const dailyMileage: number[] = new Array(sessions).fill(0);
+    const perSessionMileage: number[] = new Array(sessions).fill(0);
 
     // Run distances are weighted: long (2.25), quality (1.75), easy (1)
     let totalWeight = (sessions === 1) ? 2.25 : (sessions + 2);
@@ -82,19 +117,21 @@ function distributeDailyRuns (mileage: number, sessions: number): number[] {
     
     for (let i = 0; i < sessions; ++i) {
         if (i === 0) {
-            dailyMileage[i] = Math.floor((2.25 / totalWeight) * mileage);
+            perSessionMileage[i] = Math.floor((2.25 / totalWeight) * mileage);
         }
         else if (i === 1) {
-            dailyMileage[i] = Math.round((1.75 / totalWeight) * mileage);
+            perSessionMileage[i] = Math.round((1.75 / totalWeight) * mileage);
         }
         else if (i === sessions - 1) {
-            dailyMileage[i] = remaining;
+            perSessionMileage[i] = remaining;
         }
         else {
-            dailyMileage[i] = Math.round((1 / totalWeight) * mileage);
+            perSessionMileage[i] = Math.round((1 / totalWeight) * mileage);
         }
-        remaining -= dailyMileage[i];
+        remaining -= perSessionMileage[i];
     }
+    
+    perSessionMileage.sort((a, b) => b - a);
 
-    return dailyMileage;
+    return perSessionMileage;
 }

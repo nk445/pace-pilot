@@ -1,27 +1,15 @@
 import { createCookiesWithMutableAccessCheck } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { resolve } from "path";
 
-// map number of sessions to a default distribution
-// first 3 days are quality sessions
-const SESSIONS_TO_DAYS: Record<number, number[]> = {
-    1: [0],
-    2: [1, 5],
-    3: [1, 5, 3],
-    4: [0, 4, 2, 5],
-    5: [0, 3, 5, 4, 1],
-    6: [0, 2, 5, 4, 1, 6],
-    7: [0, 2, 5, 3, 1, 4, 6]
+const SESSIONS_TO_ACTIVE_DAYS: Record<number, number[]> = {
+    1: [0],                     // Mon
+    2: [0, 4],                  // Mon, Fri
+    3: [0, 2, 5],               // Mon, Wed, Sat
+    4: [0, 1, 4, 5],            // Mon, Tue, Fri, Sat
+    5: [0, 1, 2, 4, 5],         // Mon, Tue, Wed, Fri, Sat
+    6: [0, 1, 2, 3, 4, 5],      // Mon - Sat
+    7: [0, 1, 2, 3, 4, 5, 6]    // every day
 }
-
-const DAYS_OF_WEEK = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday'
-]
 
 // Accepts UserInputs and returns Schedule
 function generateSchedule(input: UserInput): Schedule {
@@ -96,42 +84,61 @@ function calculateWeeklyMileage(base: number,
 }
 
 function distributeDailyRuns (mileage: number, sessions: number) {
-    const perSessionMileage = calculateMileagePerSession(mileage, sessions);
-    const daysActive = SESSIONS_TO_DAYS[sessions];
+    // get map of session ct to active running days
+    const daysActive = SESSIONS_TO_ACTIVE_DAYS[sessions];
+
+    // Mon - Sun
     const dailyMileage = [0, 0, 0, 0, 0, 0, 0];
 
-    daysActive.forEach((dayIndex, i) => {
-        dailyMileage[dayIndex] = perSessionMileage[i];
-    });
-
-    return dailyMileage;
-}
-
-function calculateMileagePerSession (mileage: number, sessions: number): number[] {
-    // create array of mileage per day
-    const perSessionMileage: number[] = new Array(sessions).fill(0);
-
-    // Run distances are weighted: long (2.25), quality (1.75), easy (1)
-    let totalWeight = (sessions === 1) ? 2.25 : (sessions + 2);
-    let remaining = mileage;
-    
-    for (let i = 0; i < sessions; ++i) {
-        if (i === 0) {
-            perSessionMileage[i] = Math.floor((2.25 / totalWeight) * mileage);
-        }
-        else if (i === 1) {
-            perSessionMileage[i] = Math.round((1.75 / totalWeight) * mileage);
-        }
-        else if (i === sessions - 1) {
-            perSessionMileage[i] = remaining;
-        }
-        else {
-            perSessionMileage[i] = Math.round((1 / totalWeight) * mileage);
-        }
-        remaining -= perSessionMileage[i];
+    // divide mileage evenly for 1 or 2 days
+    if (sessions <= 2) {
+        daysActive.forEach(dayIndex => {
+            dailyMileage[dayIndex] = mileage / sessions;
+        });
+    }
+    // Long run is 40% if 3 days
+    else if (sessions === 3) {
+        dailyMileage[daysActive[0]] = 
+            dailyMileage[daysActive[1]] =
+            .3 * mileage;
+        dailyMileage[daysActive[2]] = .4 * mileage;
     }
     
-    perSessionMileage.sort((a, b) => b - a);
+    else {
+        // distribute mileage across quality sessions first
+        let remaining = mileage;
+        let easyDays = sessions;
+        daysActive.forEach(dayIndex => {
+            // long run = 25% if 4+ days
+            if (dayIndex === 5) {
+                dailyMileage[dayIndex] = .25 * mileage;
+                remaining -= dailyMileage[dayIndex];
+                --easyDays;
+            }
 
-    return perSessionMileage;
+            // quality sessions = 17.5%
+            else if (dayIndex === 1 || dayIndex === 3) {
+                dailyMileage[dayIndex] = mileage * .2;
+                remaining -= dailyMileage[dayIndex];
+                --easyDays;
+            }
+        });
+
+        // then distribute remaining mileage among easy sessions
+        const easyMileage = Math.round((remaining / easyDays) * 10) / 10;
+        daysActive.forEach((dayIndex, i) => {
+            if (dayIndex != 1 &&
+                dayIndex != 3 &&
+                dayIndex != 5) {
+                    // alot leftover mileage to last active day
+                    if (i === daysActive.length - 1) {
+                        dailyMileage[dayIndex] = remaining;
+                    }
+                dailyMileage[dayIndex] = easyMileage;
+                remaining -= dailyMileage[dayIndex];
+            }
+        });
+    }
+
+    return dailyMileage;
 }

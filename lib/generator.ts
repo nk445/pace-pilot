@@ -1,6 +1,3 @@
-import { createCookiesWithMutableAccessCheck } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-import { resolve } from "path";
-
 const SESSIONS_TO_ACTIVE_DAYS: Record<number, number[]> = {
     1: [0],                     // Mon
     2: [0, 4],                  // Mon, Fri
@@ -53,7 +50,7 @@ function resolveInputDefaults(input: UserInput): ResolvedUserInput {
         baseMileage: base,
         targetMileage: target,
         weeks: input.weeks,
-        raceDistance: input.raceDistance,
+        raceDistanceInMeters: input.raceDistanceInMeters,
         raceUnit: input.raceUnit,
         raceTimeInSeconds: input.raceTimeInSeconds,
         sessions: input.sessions

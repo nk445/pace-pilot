@@ -2,7 +2,7 @@ type UserInput = {
   baseMileage?: number;
   targetMileage?: number;
   weeks: number;
-  raceDistance?: number;
+  raceDistanceInMeters?: number;
   raceUnit: 'mi' | 'km';
   raceTimeInSeconds?: number;
   sessions: number;

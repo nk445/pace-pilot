@@ -1,3 +1,4 @@
+// map # sessions to the days sessions will occur on
 const SESSIONS_TO_ACTIVE_DAYS: Record<number, number[]> = {
     1: [0],                     // Mon
     2: [0, 4],                  // Mon, Fri
@@ -9,7 +10,7 @@ const SESSIONS_TO_ACTIVE_DAYS: Record<number, number[]> = {
 }
 
 // Accepts UserInputs and returns Schedule
-function generateSchedule(input: UserInput): Schedule {
+export function generateSchedule(input: UserInput): Schedule {
     // validate user base and target mileage inputs
     const resolvedInput = resolveInputDefaults(input);
     
@@ -19,8 +20,28 @@ function generateSchedule(input: UserInput): Schedule {
         resolvedInput.weeks,
         resolvedInput.sessions);
 
+    // Generate week objects from weekly mileage
+    const weeks = perWeekMileage.map((mileage, i) => {
+        const week: Week = {
+            weekNumber: i,
+            weeklyMileage: mileage,
+            days: []
+        }
+        return week;
+    });
+
+    /*
+    type Week = {
+        weekNumber: number;
+        weeklyMileage: number;
+        days: Day[];
+    }
+    */
+
     // TODO: Distribute the weekly miles into days
-    
+    perWeekMileage.forEach(mileage => {
+        distributeDailyRuns(mileage, resolvedInput.sessions);
+    });
 
     // TODO: Construct final schedule
 }
@@ -59,7 +80,7 @@ function resolveInputDefaults(input: UserInput): ResolvedUserInput {
     return resolvedInput;
 }
 
-function calculateWeeklyMileage(base: number,
+export function calculateWeeklyMileage(base: number,
     target: number,
     numOfWeeks: number,
     weeklySessions: number): number[]
@@ -80,7 +101,8 @@ function calculateWeeklyMileage(base: number,
     return weeklyMileage;
 }
 
-function distributeDailyRuns (mileage: number, sessions: number) {
+function distributeDailyRuns (mileage: number, sessions: number): number[]
+{
     // get map of session ct to active running days
     const daysActive = SESSIONS_TO_ACTIVE_DAYS[sessions];
 

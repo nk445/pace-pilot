@@ -4,13 +4,25 @@ function calculateVdot(distance: number,
     const timeInMinutes = timeInSeconds / 60;
     const velocity = distance / timeInMinutes;
 
-    let o2_cost = (-4.60 + 0.182258 * V + 0.000104 × V²);
-    let percent_max_effort = (0.8 + 0.1894393 * e −0.012778×T + 0.2989558 × e−0.1932605×T);
-    let vdot = o2_cost / percent_max_effort;
+    // VO2 max = oxygen cost / % VO2 Max effort
+
+    let o2_cost = (-4.60 + (0.182258 * velocity) +
+        (0.000104 * (velocity ** 2))
+    );
+
+    let percent_max_effort = (0.8 +
+        (0.1894393 * Math.exp(-0.012778 * timeInMinutes)) +
+        (0.2989558 * Math.exp(-0.1932605 * timeInMinutes))
+    );
+
+    // vdot value rounded to 1 decimal place
+    const vdot = Math.round((o2_cost / percent_max_effort) * 10) / 10;
+    
+    return vdot;
 }
 
 function getTrainingPaces(vdot: number) {
-
+  
 }
 
 

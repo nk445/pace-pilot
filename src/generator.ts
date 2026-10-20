@@ -101,7 +101,7 @@ export function calculateWeeklyMileage(base: number,
     return weeklyMileage;
 }
 
-function distributeDailyRuns (mileage: number, sessions: number): number[]
+export function distributeDailyRuns (mileage: number, sessions: number): number[]
 {
     // get map of session ct to active running days
     const daysActive = SESSIONS_TO_ACTIVE_DAYS[sessions];
@@ -128,16 +128,16 @@ function distributeDailyRuns (mileage: number, sessions: number): number[]
         let remaining = mileage;
         let easyDays = sessions;
         daysActive.forEach(dayIndex => {
-            // long run = 25% if 4+ days
+            // long run = ~25% if 4+ days
             if (dayIndex === 5) {
-                dailyMileage[dayIndex] = .25 * mileage;
+                dailyMileage[dayIndex] = Math.floor(2.5 * mileage) / 10;
                 remaining -= dailyMileage[dayIndex];
                 --easyDays;
             }
 
-            // quality sessions = 17.5%
+            // quality sessions = 20%
             else if (dayIndex === 1 || dayIndex === 3) {
-                dailyMileage[dayIndex] = mileage * .2;
+                dailyMileage[dayIndex] = Math.round(mileage * 2) / 10;
                 remaining -= dailyMileage[dayIndex];
                 --easyDays;
             }
@@ -153,8 +153,11 @@ function distributeDailyRuns (mileage: number, sessions: number): number[]
                     if (i === daysActive.length - 1) {
                         dailyMileage[dayIndex] = remaining;
                     }
-                dailyMileage[dayIndex] = easyMileage;
-                remaining -= dailyMileage[dayIndex];
+                    else {
+                        dailyMileage[dayIndex] = easyMileage;
+                    }
+                    
+                    remaining -= dailyMileage[dayIndex];
             }
         });
     }

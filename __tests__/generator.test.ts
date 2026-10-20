@@ -1,5 +1,6 @@
 import { calculateWeeklyMileage } from '../src/generator';
 import { getWeeks } from '../src/generator';
+import { distributeDailyRuns } from '../src/generator';
 
 describe('calculateWeeklyMileage', () => {
     test('returns array with appropriate mileage progression from user inputs',
@@ -40,5 +41,24 @@ describe('getWeeks', () => {
                 { weekNumber: 4, weeklyMileage: 16, days: [] }
             ]); 
         }
-    )
-})
+    );
+});
+
+describe('distributeDailyRuns', () => {
+    test('returns array with correctly placed runs with appropriate distances',
+        () => {
+
+            // test with 3 days
+            let mileage = 15;
+            let sessions = 3;
+            let weekOfRuns = distributeDailyRuns(mileage, sessions);
+            expect(weekOfRuns).toEqual([4.5, 0, 4.5, 0, 0, 6, 0]);
+
+            // test with 6 days, more mileage
+            mileage = 41;
+            sessions = 6;
+            weekOfRuns = distributeDailyRuns(mileage, sessions);
+            expect(weekOfRuns).toEqual([4.8, 8.2, 4.8, 8.2, 4.8, 10.2, 0]);
+        }
+    );
+});

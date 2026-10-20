@@ -14,34 +14,12 @@ export function generateSchedule(input: UserInput): Schedule {
     // validate user base and target mileage inputs
     const resolvedInput = resolveInputDefaults(input);
     
-    // TODO: calculate progression of mileage across weeks
-    const perWeekMileage = calculateWeeklyMileage(resolvedInput.baseMileage,
+    const weeks = getWeeks(resolvedInput.baseMileage,
         resolvedInput.targetMileage,
         resolvedInput.weeks,
-        resolvedInput.sessions);
-
-    // Generate week objects from weekly mileage
-    const weeks = perWeekMileage.map((mileage, i) => {
-        const week: Week = {
-            weekNumber: i,
-            weeklyMileage: mileage,
-            days: []
-        }
-        return week;
-    });
-
-    /*
-    type Week = {
-        weekNumber: number;
-        weeklyMileage: number;
-        days: Day[];
-    }
-    */
-
+        resolvedInput.sessions
+    );
     // TODO: Distribute the weekly miles into days
-    perWeekMileage.forEach(mileage => {
-        distributeDailyRuns(mileage, resolvedInput.sessions);
-    });
 
     // TODO: Construct final schedule
 }
@@ -78,6 +56,28 @@ function resolveInputDefaults(input: UserInput): ResolvedUserInput {
     };
 
     return resolvedInput;
+}
+
+export function getWeeks(base: number,
+    target: number,
+    numOfWeeks: number,
+    weeklySessions: number): Week[]
+{
+    // calculate progression of mileage across weeks
+    const perWeekMileage = calculateWeeklyMileage(base,
+        target, numOfWeeks, weeklySessions);
+
+    // Generate week objects from weekly mileage
+    const weeks = perWeekMileage.map((mileage, i) => {
+        const week: Week = {
+            weekNumber: i,
+            weeklyMileage: mileage,
+            days: []
+        }
+        return week;
+    });
+
+    return weeks;
 }
 
 export function calculateWeeklyMileage(base: number,

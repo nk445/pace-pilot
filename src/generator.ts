@@ -13,12 +13,22 @@ const SESSIONS_TO_ACTIVE_DAYS: Record<number, number[]> = {
 export function generateSchedule(input: UserInput): Schedule {
     // validate user base and target mileage inputs
     const resolvedInput = resolveInputDefaults(input);
-    
+
     const weeks = getWeeks(resolvedInput.baseMileage,
         resolvedInput.targetMileage,
         resolvedInput.weeks,
         resolvedInput.sessions
     );
+
+    const schedule: Schedule = {
+        scheduleId: crypto.randomUUID(),
+        creationDate: new Date(),
+        inputs: resolvedInput,
+        weeks
+    };
+
+    return schedule;
+
     // TODO: Distribute the weekly miles into days (getDays)
 
     // TODO: Construct final schedule
@@ -69,10 +79,12 @@ export function getWeeks(base: number,
 
     // Generate week objects from weekly mileage
     const weeks = perWeekMileage.map((mileage, i) => {
+        const days = getDays(mileage, weeklySessions);
+
         const week: Week = {
             weekNumber: i,
             weeklyMileage: mileage,
-            days: []
+            days
         }
         return week;
     });

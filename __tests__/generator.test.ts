@@ -29,20 +29,24 @@ describe('calculateWeeklyMileage', () => {
 describe('getWeeks', () => {
     test('returns array with Week objects from weekly progression',
         () => {
-            const base = 10;
-            const target = 16;
-            const numWeeks = 5;
+            const base = 30;
+            const target = 30;
+            const numWeeks = 1;
             const numWeeklySessions = 6;
 
-            const perWeekMileage = getWeeks(base,
+            const weeks = getWeeks(base,
                 target, numWeeks, numWeeklySessions);
 
-            expect(perWeekMileage).toEqual([
-                { weekNumber: 0, weeklyMileage: 10, days: [] },
-                { weekNumber: 1, weeklyMileage: 10, days: [] },
-                { weekNumber: 2, weeklyMileage: 10, days: [] },
-                { weekNumber: 3, weeklyMileage: 10, days: [] },
-                { weekNumber: 4, weeklyMileage: 16, days: [] }
+            expect(weeks).toEqual([
+                { weekNumber: 0, weeklyMileage: 30, days: [
+                    { dayOfWeek: 'Monday', runList: [], totalDistance: 3.5 },
+                    { dayOfWeek: 'Tuesday', runList: [], totalDistance: 6 },
+                    { dayOfWeek: 'Wednesday', runList: [], totalDistance: 3.5 },
+                    { dayOfWeek: 'Thursday', runList: [], totalDistance: 6 },
+                    { dayOfWeek: 'Friday', runList: [], totalDistance: 3.5 },
+                    { dayOfWeek: 'Saturday', runList: [], totalDistance: 7.5 },
+                    { dayOfWeek: 'Sunday', runList: [], totalDistance: 0 }
+                ] },
             ]); 
         }
     );

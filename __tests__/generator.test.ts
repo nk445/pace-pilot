@@ -3,7 +3,8 @@ import {
     calculateWeeklyMileage,
     getWeeks,
     distributeDailyRuns,
-    getDays
+    getDays,
+    generateSchedule
 } from '../src/generator';
 
 describe('calculateWeeklyMileage', () => {
@@ -87,6 +88,43 @@ describe('getDays', () => {
                 { dayOfWeek: 'Saturday', runList: [], totalDistance: 6 },
                 { dayOfWeek: 'Sunday', runList: [], totalDistance: 0 }
             ]);
+        }
+    );
+});
+
+describe('generateSchedule', () => {
+    test('returns schedule with weeks, days, runs nested',
+        () => {
+            const userInput: UserInput = {
+                baseMileage: 18,
+                weeks: 2,
+                sessions: 4,
+                raceUnit: 'mi'
+            };
+
+            const schedule = generateSchedule(userInput);
+
+            console.log(schedule);
+            expect(schedule.weeks).toEqual([
+                { weekNumber: 0, weeklyMileage: 18, days: [
+                    { dayOfWeek: 'Monday', runList: [], totalDistance: 5 },
+                    { dayOfWeek: 'Tuesday', runList: [], totalDistance: 3.6 },
+                    { dayOfWeek: 'Wednesday', runList: [], totalDistance: 0 },
+                    { dayOfWeek: 'Thursday', runList: [], totalDistance: 0 },
+                    { dayOfWeek: 'Friday', runList: [], totalDistance: 5 },
+                    { dayOfWeek: 'Saturday', runList: [], totalDistance: 4.5 },
+                    { dayOfWeek: 'Sunday', runList: [], totalDistance: 0 }
+                ] },
+                { weekNumber: 1, weeklyMileage: 18, days: [
+                    { dayOfWeek: 'Monday', runList: [], totalDistance: 5 },
+                    { dayOfWeek: 'Tuesday', runList: [], totalDistance: 3.6 },
+                    { dayOfWeek: 'Wednesday', runList: [], totalDistance: 0 },
+                    { dayOfWeek: 'Thursday', runList: [], totalDistance: 0 },
+                    { dayOfWeek: 'Friday', runList: [], totalDistance: 5 },
+                    { dayOfWeek: 'Saturday', runList: [], totalDistance: 4.5 },
+                    { dayOfWeek: 'Sunday', runList: [], totalDistance: 0 }
+                ] },
+            ]); 
         }
     );
 });

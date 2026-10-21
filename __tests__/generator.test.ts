@@ -1,6 +1,10 @@
-import { calculateWeeklyMileage } from '../src/generator';
-import { getWeeks } from '../src/generator';
-import { distributeDailyRuns } from '../src/generator';
+import { TURBOPACK_CLIENT_BUILD_MANIFEST } from 'next/dist/shared/lib/constants';
+import {
+    calculateWeeklyMileage,
+    getWeeks,
+    distributeDailyRuns,
+    getDays
+} from '../src/generator';
 
 describe('calculateWeeklyMileage', () => {
     test('returns array with appropriate mileage progression from user inputs',
@@ -59,6 +63,26 @@ describe('distributeDailyRuns', () => {
             sessions = 6;
             weekOfRuns = distributeDailyRuns(mileage, sessions);
             expect(weekOfRuns).toEqual([4.8, 8.2, 4.8, 8.2, 4.8, 10.2, 0]);
+        }
+    );
+});
+
+describe('getDays', () => {
+    test('returns array with Day objects from daily mileage targets',
+        () => {
+            // test with 3 days
+            let mileage = 15;
+            let sessions = 3;
+            let days = getDays(mileage, sessions);
+            expect(days).toEqual([
+                { dayOfWeek: 'Monday', runList: [], totalDistance: 4.5 },
+                { dayOfWeek: 'Tuesday', runList: [], totalDistance: 0 },
+                { dayOfWeek: 'Wednesday', runList: [], totalDistance: 4.5 },
+                { dayOfWeek: 'Thursday', runList: [], totalDistance: 0 },
+                { dayOfWeek: 'Friday', runList: [], totalDistance: 0 },
+                { dayOfWeek: 'Saturday', runList: [], totalDistance: 6 },
+                { dayOfWeek: 'Sunday', runList: [], totalDistance: 0 }
+            ]);
         }
     );
 });

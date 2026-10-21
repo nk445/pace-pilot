@@ -19,7 +19,7 @@ export function generateSchedule(input: UserInput): Schedule {
         resolvedInput.weeks,
         resolvedInput.sessions
     );
-    // TODO: Distribute the weekly miles into days
+    // TODO: Distribute the weekly miles into days (getDays)
 
     // TODO: Construct final schedule
 }
@@ -101,7 +101,28 @@ export function calculateWeeklyMileage(base: number,
     return weeklyMileage;
 }
 
-export function distributeDailyRuns (mileage: number, sessions: number): number[]
+export function getDays(mileage: number, sessions: number): Day[] {
+    const daysOfWeek = ['Monday', 'Tuesday',
+        'Wednesday', 'Thursday', 'Friday',
+        'Saturday', 'Sunday'] as const;
+
+    // calculate mileage per day
+    const perDayMileage = distributeDailyRuns(mileage, sessions);
+
+    // generate Day objects based on mileage
+    const days = perDayMileage.map((currMileage, i) => {
+        const day: Day = {
+            dayOfWeek: daysOfWeek[i],
+            runList: [],
+            totalDistance: currMileage
+        };
+        return day;
+    });
+
+    return days;
+}
+
+export function distributeDailyRuns(mileage: number, sessions: number): number[]
 {
     // get map of session ct to active running days
     const daysActive = SESSIONS_TO_ACTIVE_DAYS[sessions];
